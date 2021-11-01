@@ -30,7 +30,7 @@
 /***************************************************/
 int random_num(int inf, int sup)
 {
-  assert(inf < sup);
+  assert(inf <= sup);
   return rand() % (sup - inf + 1) + inf;
 }
 
@@ -80,12 +80,12 @@ int *generate_perm(int N)
     return NULL;
   }
 
-  for (i = 1; i < N; i++)
+  for (i = 0; i < N; i++)
   {
-    perm[i] = i;
+    perm[i] = i + 1;
   }
 
-  for (i = 0; i < N - 1; i++)
+  for (i = 0; i < N; i++)
   {
     swap(&perm[i], &perm[random_num(i, N - 1)]);
   }

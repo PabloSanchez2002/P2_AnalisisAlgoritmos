@@ -35,9 +35,9 @@ short average_sorting_time(pfunc_sort metodo, int n_perms, int N, PTIME_AA ptime
   ptime->max_ob = 0;
 
   time = clock();
+  ptime->N = N;
   for (i = 0; i < n_perms; i++)
   {
-    ptime->N = N;
     ob = metodo(perm[i], 0, N - 1);
 
     if (ob > ptime->max_ob)
@@ -49,6 +49,7 @@ short average_sorting_time(pfunc_sort metodo, int n_perms, int N, PTIME_AA ptime
     ptime->average_ob += ob;
   }
   time = clock() - time;
+  ptime->n_elems = n_perms;
   ptime->average_ob /= n_perms;
   ptime->time = (double)time / n_perms / CLOCKS_PER_SEC;
 
@@ -73,7 +74,7 @@ short generate_sorting_times(pfunc_sort method, char *file, int num_min, int num
 
   tamano = (num_max - num_min) / incr + 1;
 
-  times = (TIME_AA *)malloc(sizeof(TIME_AA) * tamano);
+  times = (TIME_AA *)malloc(tamano * sizeof(TIME_AA));
   if (!times)
   {
     for (i = 0; i < tamano; i++)
@@ -86,7 +87,7 @@ short generate_sorting_times(pfunc_sort method, char *file, int num_min, int num
 
   for (i = 0; i < tamano; i++)
   {
-    average_sorting_time(method, n_perms, (i + 1) * incr, &times[i]);
+    average_sorting_time(method, n_perms, i * incr + num_min, &times[i]);
   }
 
   save_time_table(file, times, tamano);
