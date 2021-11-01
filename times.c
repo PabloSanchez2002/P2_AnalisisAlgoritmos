@@ -26,38 +26,43 @@
 /***************************************************/
 short average_sorting_time(pfunc_sort metodo, int n_perms, int N, PTIME_AA ptime)
 {
-  int **perm = NULL, i = 0, ob = 0;
-  clock_t time;
+  int **perms = generate_permutations(n_perms, N);
+  clock_t t_ini, t_fin;
+  int i, OB, min, max;
+  double count = 0;
 
-  perm = generate_permutations(n_perms, N);
+  if (perms == NULL)
+    return ERR;
 
-  ptime->min_ob = INT_MAX;
-  ptime->max_ob = 0;
+  min = INT_MAX;
+  max = 0;
+  t_ini = clock();
 
-  time = clock();
+  for (i = 0; i < n_perms; i++)
+  {
+    OB = metodo(perms[i], 0, N - 1);
+
+    if (OB < min)
+      min = OB;
+    if (OB > max)
+      max = OB;
+    count += OB;
+  }
+
+  t_fin = clock();
   ptime->N = N;
-  for (i = 0; i < n_perms; i++)
-  {
-    ob = metodo(perm[i], 0, N - 1);
-
-    if (ob > ptime->max_ob)
-      ptime->max_ob = ob;
-
-    if (ob < ptime->min_ob)
-      ptime->min_ob = ob;
-
-    ptime->average_ob += ob;
-  }
-  time = clock() - time;
   ptime->n_elems = n_perms;
-  ptime->average_ob /= n_perms;
-  ptime->time = (double)time / n_perms / CLOCKS_PER_SEC;
+  ptime->time = ((double)(t_fin - t_ini) / n_perms) / CLOCKS_PER_SEC;
+  ptime->average_ob = count / n_perms;
+  ptime->min_ob = min;
+  ptime->max_ob = max;
 
   for (i = 0; i < n_perms; i++)
   {
-    free(perm[i]);
+    free(perms[i]);
   }
-  free(perm);
+
+  free(perms);
 
   return OK;
 }
@@ -102,23 +107,26 @@ short generate_sorting_times(pfunc_sort method, char *file, int num_min, int num
 /***************************************************/
 short save_time_table(char *file, PTIME_AA ptime, int n_times)
 {
-  FILE *f = NULL;
-  int i = 0;
+  int i;
+  FILE *pf = NULL;
 
-  f = fopen(file, "w");
+  if (file == NULL)
+    return ERR;
 
-  if (f == NULL)
+  pf = fopen(file, "w");
+
+  if (pf == NULL)
   {
-    fclose(f);
+    fclose(pf);
     return ERR;
   }
 
-  /*fprintf(f, "Tiempos de lectura:\nThe measures are: Num of permutations | Avg. time | Avg. Obs | Max | Min\n\n");*/
   for (i = 0; i < n_times; i++)
   {
-    fprintf(f, "%d %f %f %d %d\n", ptime[i].N, ptime[i].time * 1000, ptime[i].average_ob, ptime[i].max_ob, ptime[i].min_ob);
+    fprintf(pf, "%d %f %f %d %d\n", ptime[i].N, ptime[i].time, ptime[i].average_ob, ptime[i].max_ob, ptime[i].min_ob);
   }
-  fclose(f);
+
+  fclose(pf);
 
   return OK;
 }
